@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/masin/:slug", "destination": "/api/og?slug=:slug" },
+    { "source": "/((?!api/|assets/|.*\\..*).*)", "destination": "/index.html" }
+  ]
+}
