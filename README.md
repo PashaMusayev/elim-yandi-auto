@@ -14,7 +14,7 @@ npm run dev
 ## Supabase qurulumu
 
 1. [supabase.com](https://supabase.com)-da yeni layihə yaradın.
-2. **SQL Editor** → `supabase/migrations/0001_init.sql` faylının məzmununu işə salın
+2. **SQL Editor** → əvvəl `supabase/migrations/0001_init.sql`, sonra `0002_grants.sql` faylını işə salın
    (cədvəllər, RLS, trigger-lər, `car-images` storage bucket).
 3. Nümunə maşınlar üçün `supabase/seed.sql` faylını işə salın.
 4. **Authentication → Users → Add user** ilə admin istifadəçisini (e-poçt + şifrə) yaradın.

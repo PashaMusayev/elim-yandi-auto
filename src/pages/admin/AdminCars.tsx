@@ -1,3 +1,4 @@
+import { errorMessage } from '@/lib/errors';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Eye, Pencil, Plus, Search } from 'lucide-react';
@@ -42,7 +43,7 @@ export default function AdminCars() {
       await setCarStatus(car.id, status);
     } catch (e) {
       setOverride((o) => ({ ...o, [car.id]: car.status }));
-      alert(e instanceof Error ? e.message : 'Status dəyişmədi');
+      alert(errorMessage(e, 'Status dəyişmədi'));
     } finally {
       setPending(null);
     }

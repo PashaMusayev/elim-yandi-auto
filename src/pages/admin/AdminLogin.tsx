@@ -1,3 +1,4 @@
+import { errorMessage } from '@/lib/errors';
 import { useState, type FormEvent } from 'react';
 import { Logo } from '@/components/layout/Logo';
 import { Button } from '@/components/ui/Button';
@@ -19,7 +20,7 @@ export default function AdminLogin() {
     try {
       await signIn(email.trim(), password);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Xəta baş verdi');
+      setErr(errorMessage(e));
     } finally {
       setBusy(false);
     }

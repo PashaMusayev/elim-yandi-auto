@@ -1,3 +1,4 @@
+import { errorMessage } from '@/lib/errors';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ArrowLeft, Camera, ClipboardPaste, Loader2, Star, Trash2, X } from 'lucide-react';
@@ -300,7 +301,7 @@ export default function CarForm() {
 
       nav('/admin', { replace: true });
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Xəta baş verdi');
+      setErr(errorMessage(e));
     } finally {
       setSaving(null);
     }
@@ -313,7 +314,7 @@ export default function CarForm() {
       await deleteCar(id);
       nav('/admin', { replace: true });
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Silinmədi');
+      setErr(errorMessage(e, 'Silinmədi'));
       setSaving(null);
     }
   };
