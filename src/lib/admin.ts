@@ -74,7 +74,7 @@ export async function setCarStatus(id: string, status: CarStatus) {
 
 export async function deleteCar(id: string) {
   const { data: imgs } = await sb().from('car_images').select('path,thumb').eq('car_id', id);
-  const paths = (imgs ?? []).flatMap((i) => [i.path, i.thumb]);
+  const paths = storagePaths((imgs ?? []).flatMap((i) => [i.path, i.thumb]));
   if (paths.length) await sb().storage.from(IMAGE_BUCKET).remove(paths);
   const { error } = await sb().from('cars').delete().eq('id', id);
   if (error) throw error;
@@ -112,8 +112,23 @@ export async function uploadCarImages(
   return rows.map((r) => byPath.get(r.path)!);
 }
 
+/** Xarici linklə şəkil: storage-a yüklənmir, link olduğu kimi saxlanılır. */
+export async function addCarImageUrls(carId: string, images: { url: string; position: number }[]): Promise<CarImage[]> {
+  if (!images.length) return [];
+  const rows = images.map(({ url, position }) => ({ car_id: carId, path: url, thumb: url, position }));
+  const { data, error } = await sb().from('car_images').insert(rows).select('*');
+  if (error) throw error;
+  invalidateCars();
+  const byPos = new Map((data as CarImage[]).map((r) => [r.position, r]));
+  return rows.map((r) => byPos.get(r.position)!);
+}
+
+/** Yalnız öz storage-ımızdakı faylları silirik; xarici linklərə toxunmuruq. */
+const storagePaths = (paths: string[]) => paths.filter((p) => !/^https?:\/\//i.test(p));
+
 export async function deleteCarImage(img: CarImage) {
-  await sb().storage.from(IMAGE_BUCKET).remove([img.path, img.thumb]);
+  const paths = storagePaths([img.path, img.thumb]);
+  if (paths.length) await sb().storage.from(IMAGE_BUCKET).remove(paths);
   const { error } = await sb().from('car_images').delete().eq('id', img.id);
   if (error) throw error;
   invalidateCars();

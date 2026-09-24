@@ -1,10 +1,11 @@
 import { errorMessage } from '@/lib/errors';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Camera, ClipboardPaste, Loader2, Star, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Camera, ClipboardPaste, Link2, Loader2, Star, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { PageSpinner } from '@/components/ui/PageSpinner';
 import {
+  addCarImageUrls,
   adminFetchCar,
   deleteCar,
   deleteCarImage,
@@ -30,7 +31,13 @@ import { adminInput } from './AdminLogin';
 // ─── Şəkil elementləri ───────────────────────────────────────────────────────
 type Item =
   | { key: string; kind: 'existing'; img: CarImage; preview: string }
-  | { key: string; kind: 'new'; state: 'processing' | 'ready' | 'error'; processed?: ProcessedImage; preview?: string };
+  | { key: string; kind: 'new'; state: 'processing' | 'ready' | 'error'; processed?: ProcessedImage; preview?: string }
+  | { key: string; kind: 'url'; url: string; preview: string };
+
+/** Mətndən bütün http(s) linklərini çıxarır (bir neçə link yapışdırmaq olar). */
+function extractUrls(text: string): string[] {
+  return [...new Set(text.match(/https?:\/\/[^\s"'<>]+/gi) ?? [])];
+}
 
 const BRANDS = ['Mercedes-Benz', 'BMW', 'Toyota', 'Hyundai', 'Kia', 'Lexus', 'Opel', 'Chevrolet', 'Nissan', 'Volkswagen'];
 const THIS_YEAR = new Date().getFullYear();
@@ -141,6 +148,8 @@ export default function CarForm() {
   const [slug, setSlug] = useState<string | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [removed, setRemoved] = useState<CarImage[]>([]);
+  const [urlText, setUrlText] = useState('');
+  const [urlErr, setUrlErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -207,6 +216,27 @@ export default function CarForm() {
       }
     };
     void Promise.all([worker(), worker(), worker()]);
+  };
+
+  const addUrls = (text: string) => {
+    const urls = extractUrls(text);
+    if (!urls.length) return setUrlErr('Link https:// ilə başlamalıdır');
+    setUrlErr(null);
+    setItems((prev) => {
+      const have = new Set(prev.map((it) => (it.kind === 'url' ? it.url : it.kind === 'existing' ? it.img.path : '')));
+      const fresh = urls.filter((u) => !have.has(u)).map((url) => ({ key: crypto.randomUUID(), kind: 'url' as const, url, preview: url }));
+      return [...prev, ...fresh];
+    });
+    setUrlText('');
+  };
+
+  const pasteImageUrl = async () => {
+    try {
+      const t = await navigator.clipboard.readText();
+      if (t.trim()) addUrls(t);
+    } catch {
+      /* icazə verilmədi — əl ilə yapışdırsın */
+    }
   };
 
   const removeItem = (key: string) => {
@@ -292,11 +322,20 @@ export default function CarForm() {
         (n) => setSaving(`Şəkillər yüklənir ${n}/${pending.length}`),
       );
 
-      // Yekun sıra: köhnə + yeni, ekrandakı ardıcıllıqla
+      const linked = await addCarImageUrls(
+        car.id,
+        items
+          .map((it, position) => ({ it, position }))
+          .filter((x): x is { it: Extract<Item, { kind: 'url' }>; position: number } => x.it.kind === 'url')
+          .map(({ it, position }) => ({ url: it.url, position })),
+      );
+
+      // Yekun sıra: köhnə + yüklənən + link, ekrandakı ardıcıllıqla
       let u = 0;
+      let l = 0;
       const final = items
-        .filter((it) => it.kind === 'existing' || it.state === 'ready')
-        .map((it) => (it.kind === 'existing' ? it.img : uploaded[u++]));
+        .filter((it) => it.kind !== 'new' || it.state === 'ready')
+        .map((it) => (it.kind === 'existing' ? it.img : it.kind === 'url' ? linked[l++] : uploaded[u++]));
       if (!isNew) await reorderCarImages(final);
 
       nav('/admin', { replace: true });
@@ -350,13 +389,61 @@ export default function CarForm() {
         >
           <Camera className="size-7" /> Şəkil əlavə et
         </button>
+        {/* Link ilə şəkil */}
+        <div className="space-y-1.5">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Link2 className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/40" />
+              <input
+                type="url"
+                inputMode="url"
+                value={urlText}
+                onChange={(e) => setUrlText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addUrls(urlText);
+                  }
+                }}
+                onPaste={(e) => {
+                  const t = e.clipboardData.getData('text');
+                  if (extractUrls(t).length) {
+                    e.preventDefault();
+                    addUrls(t);
+                  }
+                }}
+                placeholder="və ya şəklin linkini yapışdır"
+                aria-label="Şəkil linki"
+                className={`${adminInput} pl-9`}
+              />
+            </div>
+            {urlText.trim() ? (
+              <button type="button" onClick={() => addUrls(urlText)} className="shrink-0 rounded-xl bg-fire px-4 font-bold">
+                Əlavə et
+              </button>
+            ) : (
+              <button type="button" onClick={pasteImageUrl} className="grid w-14 shrink-0 place-items-center rounded-xl bg-white/10" aria-label="Linki yapışdır">
+                <ClipboardPaste className="size-5" />
+              </button>
+            )}
+          </div>
+          {urlErr && <p className="text-sm font-semibold text-flame">{urlErr}</p>}
+        </div>
+
         {items.length > 0 && (
           <>
             <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {items.map((it, i) => (
                 <li key={it.key} className="relative aspect-square overflow-hidden rounded-xl bg-coal">
                   {'preview' in it && it.preview ? (
-                    <img src={it.preview} alt="" className="size-full object-cover" />
+                    <img
+                      src={it.preview}
+                      alt=""
+                      className="size-full object-cover"
+                      onError={(e) => {
+                        if (it.kind === 'url') e.currentTarget.src = '/placeholder-car.svg';
+                      }}
+                    />
                   ) : it.kind === 'new' && it.state === 'error' ? (
                     <div className="grid size-full place-items-center p-2 text-center text-xs text-flame">Xəta</div>
                   ) : (
@@ -376,6 +463,9 @@ export default function CarForm() {
                       <Star className="size-4" />
                     </button>
                   )}
+                  {it.kind === 'url' && (
+                    <span className="absolute top-1 left-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold">LİNK</span>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeItem(it.key)}
@@ -387,7 +477,7 @@ export default function CarForm() {
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-white/45">⭐ — əsas şəkil et (kataloqda görünən). Şəkillər avtomatik WebP-yə sıxılır.</p>
+            <p className="text-xs text-white/45">⭐ — əsas şəkil et (kataloqda görünən). Yüklənən şəkillər avtomatik WebP-yə sıxılır; link ilə əlavə olunan şəkil isə həmin saytdan göstərilir.</p>
           </>
         )}
       </section>

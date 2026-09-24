@@ -52,7 +52,11 @@ export default async function handler(req: Request): Promise<Response> {
           .join(', ');
         const desc = `${name} ${car.year}${bits ? `, ${bits}` : ''}. Qiymət: ${num(car.price)} AZN. Elim Yandı Auto — Bakı, Babək. ☎ 055 200 04 38`;
         const first = [...car.car_images].sort((a, b) => a.position - b.position)[0]?.path ?? car.cover_thumb;
-        const image = first ? `${sbUrl}/storage/v1/object/public/car-images/${first}` : `${siteUrl}/og-default.png`;
+        const image = !first
+          ? `${siteUrl}/og-default.png`
+          : /^https?:\/\//i.test(first)
+            ? first
+            : `${sbUrl}/storage/v1/object/public/car-images/${first}`;
         const canonical = `${siteUrl}/masin/${slug}`;
 
         const meta = [
