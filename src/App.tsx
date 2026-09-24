@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { Layout } from '@/components/layout/Layout';
 import Home from '@/pages/Home';
+import RouteError from '@/pages/RouteError';
 
 // Ana səhifə birbaşa yüklənir (TikTok-dan gələnlərin çoxu ora düşür), qalanları lazy.
 const Catalog = lazy(() => import('@/pages/Catalog'));
@@ -17,6 +18,7 @@ const CarForm = lazy(() => import('@/pages/admin/CarForm'));
 const router = createBrowserRouter([
   {
     element: <Layout />,
+    errorElement: <RouteError />,
     children: [
       { path: '/', element: <Home /> },
       { path: '/kataloq', element: <Catalog /> },
@@ -29,6 +31,7 @@ const router = createBrowserRouter([
   {
     path: '/admin',
     element: <AdminLayout />,
+    errorElement: <RouteError />,
     children: [
       { index: true, element: <AdminCars /> },
       { path: 'statistika', element: <AdminStats /> },

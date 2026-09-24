@@ -15,7 +15,9 @@ export const NAV = [
 export function Header() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-ink/85 backdrop-blur-md">

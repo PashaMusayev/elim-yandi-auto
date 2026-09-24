@@ -24,7 +24,9 @@ export default function Catalog() {
   const setFilters = (f: Filters) => setParams(filtersToParams(f), { replace: true });
   const [sheet, setSheet] = useState(false);
 
-  useEffect(() => (sheet ? lockScroll() : undefined), [sheet]);
+  useEffect(() => {
+    if (sheet) return lockScroll();
+  }, [sheet]);
 
   const brandTitle = filters.brands.length === 1 ? filters.brands[0] : null;
   useSeo({

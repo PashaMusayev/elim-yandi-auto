@@ -8,7 +8,11 @@ import { PageSpinner } from '@/components/ui/PageSpinner';
 export function Layout() {
   const { pathname } = useLocation();
   const onCarPage = useMatch('/masin/:slug');
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // Diqqət: effekt heç nə qaytarmamalıdır — yeni brauzerlərdə scrollTo() Promise qaytarır,
+  // React isə qaytarılan dəyəri cleanup funksiyası kimi çağırır ("l is not a function").
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
     <div className="flex min-h-dvh flex-col">
