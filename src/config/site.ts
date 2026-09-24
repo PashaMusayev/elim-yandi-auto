@@ -3,7 +3,7 @@ export const SITE = {
   name: 'Elim Yandı Auto',
   owner: 'Nihad',
   ownerGenitive: 'Nihadın',
-  url: (import.meta.env.VITE_SITE_URL as string | undefined) ?? 'https://elimyandi.az',
+  url: (import.meta.env.VITE_SITE_URL || 'https://elimyandi.az').replace(/\/+$/, ''),
   city: 'Bakı',
   address: 'Babək prospekti, Bakı',
   addressNote: 'Yeganə filial — başqa filialımız yoxdur!',

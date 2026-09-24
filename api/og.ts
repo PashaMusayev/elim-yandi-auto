@@ -31,7 +31,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   const sbUrl = process.env.VITE_SUPABASE_URL;
   const sbKey = process.env.VITE_SUPABASE_ANON_KEY;
-  const siteUrl = process.env.VITE_SITE_URL || origin;
+  const siteUrl = (process.env.VITE_SITE_URL || origin).replace(/\/+$/, '');
 
   if (sbUrl && sbKey && /^[a-z0-9-]+$/.test(slug)) {
     try {
