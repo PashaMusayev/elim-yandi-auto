@@ -25,9 +25,10 @@ export const SITE = {
   },
   instagram: null as string | null,
   youtube: null as string | null,
-  /** Google Maps: dəqiq pin gələndə `mapsEmbed` və `mapsLink`-i yeniləyin. */
-  mapsLink: 'https://maps.google.com/?q=Babək+prospekti,+Bakı',
-  mapsEmbed: 'https://www.google.com/maps?q=Babək+prospekti,+Bakı&output=embed',
+  /** Salonun dəqiq yeri: 40°23'40.7"N 49°58'01.7"E */
+  coords: { lat: 40.394639, lng: 49.967139 },
+  mapsLink: 'https://www.google.com/maps/search/?api=1&query=40.394639,49.967139',
+  mapsEmbed: 'https://www.google.com/maps?q=40.394639,49.967139&z=17&output=embed',
   priceRange: { min: 6900, max: 75000 },
 } as const;
 
