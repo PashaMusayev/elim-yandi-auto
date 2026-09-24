@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { Menu, Phone, X } from 'lucide-react';
 import { PRIMARY_PHONE, SITE } from '@/config/site';
+import { FavoritesButton } from '@/components/car/FavoritesDrawer';
 import { TikTokIcon } from '@/components/ui/BrandIcons';
 import { Logo } from './Logo';
 
@@ -52,6 +53,7 @@ export function Header() {
           >
             <Phone className="size-4" /> {PRIMARY_PHONE.display}
           </a>
+          <FavoritesButton />
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}

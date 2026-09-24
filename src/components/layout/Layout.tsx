@@ -4,6 +4,8 @@ import { Footer } from './Footer';
 import { Header } from './Header';
 import { MobileBottomBar } from './MobileBottomBar';
 import { PageSpinner } from '@/components/ui/PageSpinner';
+import { CarModalHost } from '@/components/car/CarDetailModal';
+import { FavoritesDrawer } from '@/components/car/FavoritesDrawer';
 
 export function Layout() {
   const { pathname } = useLocation();
@@ -24,6 +26,8 @@ export function Layout() {
       </main>
       <Footer />
       {!onCarPage && <MobileBottomBar />}
+      <CarModalHost />
+      <FavoritesDrawer />
     </div>
   );
 }

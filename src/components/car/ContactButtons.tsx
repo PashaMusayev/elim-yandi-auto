@@ -24,10 +24,20 @@ export function WhatsAppButton({ car, className = '', compact = false }: { car: 
   );
 }
 
-export function CallButton({ car, className = '', phone = PRIMARY_PHONE }: { car: Car; className?: string; phone?: { tel: string; display: string } }) {
+export function CallButton({
+  car,
+  className = '',
+  phone = PRIMARY_PHONE,
+  label = 'Zəng et',
+}: {
+  car: Car;
+  className?: string;
+  phone?: { tel: string; display: string };
+  label?: string;
+}) {
   return (
     <a href={`tel:${phone.tel}`} onClick={() => track(car.id, 'call')} className={btn('fire', `text-lg whitespace-nowrap ${className}`)}>
-      <Phone className="size-5" /> Zəng et
+      <Phone className="size-5" /> {label}
     </a>
   );
 }
