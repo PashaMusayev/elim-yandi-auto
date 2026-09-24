@@ -38,7 +38,8 @@ export default async function handler(req: Request): Promise<Response> {
       const api =
         `${sbUrl}/rest/v1/cars?slug=eq.${slug}&limit=1` +
         `&select=brand,model,year,price,status,engine_l,mileage_km,cover_thumb,car_images(path,position)`;
-      const res = await fetch(api, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+      // Yalnız apikey başlığı: həm köhnə anon (JWT), həm yeni sb_publishable_ açarları ilə işləyir
+      const res = await fetch(api, { headers: { apikey: sbKey } });
       const [car] = (await res.json()) as CarRow[];
       if (car) {
         const name = `${car.brand} ${car.model}`;
